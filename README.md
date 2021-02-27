@@ -19,7 +19,7 @@ python3 train.py DIRECTORY_TO_IMAGE_FILES DIRECTORY_TO_SAVE_CHECKPOINT_FILE
 ```
 
 ### From pretrained model:
-Download ckpt file from releases and run the train script:
+Download checkpoint file from releases and run the train script:
 ```
 python3 train.py DIRECTORY_TO_IMAGE_FILES DIRECTORY_OF_CHECKPOINT_FILE
 ```

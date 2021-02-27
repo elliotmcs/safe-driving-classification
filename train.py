@@ -29,10 +29,10 @@ from sklearn.metrics import confusion_matrix
 import itertools
 import argparse
 
-width = 384
-height = 216
+DEFAULT_WIDTH = 384
+DEFAULT_HEIGHT = 216
 batch_size = 64
-epochs = 8
+epochs = 25
 
 class PlotLosses(keras.callbacks.Callback):
 	def on_train_begin(self, logs={}):
@@ -56,6 +56,8 @@ class PlotLosses(keras.callbacks.Callback):
 
 def load_images(args):
 	images_path = args.images
+	width = args.width
+	height = args.height
 	classes = os.listdir(images_path)
 	if len(classes) < 2:
 		print("E: too few classes in images directory, must be 2 (safe, unsafe).")
@@ -70,7 +72,9 @@ def load_images(args):
 	val_set = image_gen.flow_from_directory(images_path, target_size=(height, width), batch_size=batch_size, subset='validation', class_mode='binary')
 	return train_set, val_set
 
-def build_model():
+def build_model(args):
+	width = args.width
+	height = args.height
 	main_input = Input(shape=(height, width,3),dtype='float32', name='main_input')
 	c1= Conv2D(8, kernel_size=(2,2), activation='relu',padding='same')(main_input)
 	c1 = MaxPooling2D(pool_size=(2, 2))(c1)
@@ -144,10 +148,10 @@ def train(args):
 
 	train_set, val_set = load_images(args)
 
-	model = build_model()
+	model = build_model(args)
 	try:
 		model.load_weights(checkpoint_path)
-	except tf.python.framework.errors_impl.NotFoundError:
+	except:
 		pass
 	try:
 		model.fit(train_set, validation_data=val_set, shuffle=True, epochs=epochs, callbacks=[plot_losses, es, ckpt_callback])
@@ -155,8 +159,8 @@ def train(args):
 		pass
 	plot_losses.on_train_end()
 
-	inp_va = np.empty(shape=(1, height, width, 3))
-	tar_va = np.empty(shape=(1,))
+	inp_va = np.empty(shape=(0, args.height, args.width, 3))
+	tar_va = np.empty(shape=(0,))
 
 	for _ in range(5):
 		sample = next(val_set)
@@ -171,7 +175,6 @@ def train(args):
 
 	tar_cm = tar_va
 	Per_cm = Per_class
-
 	cnf_matrix = confusion_matrix(tar_cm, Per_cm)
 	np.set_printoptions(precision=2)
 
@@ -188,7 +191,8 @@ def main():
 	parser = argparse.ArgumentParser(description='Train image classifier')
 	parser.add_argument('images', type=str, help='directory of input images')
 	parser.add_argument('checkpoint', type=str, help='path to checkpoint file')
-
+	parser.add_argument('--width', type=int, default=DEFAULT_WIDTH, help='the width of the input images')
+	parser.add_argument('--height', type=int, default=DEFAULT_HEIGHT, help='the height of the input images')
 	args = parser.parse_args()
 	train(args)
 
