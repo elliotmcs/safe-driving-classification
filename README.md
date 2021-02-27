@@ -36,3 +36,5 @@ The dataset used for this project can be found in the releases. If you want to t
 	│	|	├── image1.png
 	│	|	├── image2.png
 	|	|	└── ...
+
+The default image size used by the train script is 384x216. If your dataset uses different image dimensions pass those dimensions to the train script using the --width and --height options.
